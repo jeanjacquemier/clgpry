@@ -53,8 +53,12 @@ Provide that file in the expected location (or adapt the likelihood source for
 your data) before building or running that likelihood.
 
 ## Using the pipeline
+### From the command line
+```bash
+clgpry-run -h
+```
 
-Create a pipeline with paths to your Firecrown likelihood source and CosmoSIS
+### Inside a python implementation.
 standard library. Supply a parameter vector in the order returned by
 `get_param_names()`:
 

@@ -1,5 +1,7 @@
 import argparse
+import os
 import sys
+from datetime import datetime
 
 
 from .pipeline import ClusterLikelihoodPipeline
@@ -57,8 +59,20 @@ def main():
         camb_options=dict(verbose=is_main),
     )
 
+    # Create a timestamped output folder (same name on all ranks) and run
+    # from inside it, so that images/, loglike_histogram.png and
+    # loglike_values.npy all end up there. Done after the pipeline is built
+    # so relative input paths are resolved from the original directory.
+    run_dir = datetime.now().strftime("%Y%m%d_%H%M%S") if is_main else None
+    if size > 1:
+        run_dir = MPI.COMM_WORLD.bcast(run_dir, root=0)
+    run_dir = os.path.abspath(run_dir)
+    os.makedirs(run_dir, exist_ok=True)
+    os.chdir(run_dir)
+
     if is_main:
         print(f"Running GPry with {size} MPI process(es)")
+        print(f"INFO: Output directory: {run_dir}")
 
     # Runner detects MPI by itself: no explicit MPI code needed here.
     from gpry import Runner
@@ -70,7 +84,7 @@ def main():
         runner.run()
     except Exception as e:
         print(f'GPry Runner error: {e!r}')
-        raise                      # keep the traceback and stop
+        pipe.com_abort()
     finally:
         if is_main:
             pipe.print_loglike_counter()

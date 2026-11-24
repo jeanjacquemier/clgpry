@@ -11,6 +11,7 @@ import configparser
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from cosmosis.datablock import DataBlock, option_section
 from firecrown.connector.cosmosis.likelihood import FirecrownLikelihood
@@ -481,6 +482,7 @@ class ClusterLikelihoodPipeline:
                    bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5),
                    family='monospace')
         
+        plt.rcParams["text.usetex"] = False
         plt.tight_layout()
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()

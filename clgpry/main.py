@@ -164,7 +164,10 @@ def main():
         wall_time = time.perf_counter() - t_start
         if is_main:
             pipe.print_loglike_counter()
-            pipe.save_loglike_histogram()
+            try:
+                pipe.save_loglike_histogram()
+            except:
+                print('Error cound not save_loglike_histogram')
             write_benchmark_file(run_dir, args, size, status, wall_time, pipe)
     # Plot / save only from the main process to avoid N processes
     # writing the same files.

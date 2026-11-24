@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clgpry"
+version = "0.1.0"
+description = "Cluster Likelihood GPRy - Bayesian inference on cluster cosmology"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "LSST Dark Energy Science Collaboration"}
+]
+keywords = ["astronomy", "cosmology", "cluster", "bayesian", "inference", "gpry"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "numpy>=1.20",
+    "matplotlib>=3.4",
+    "cosmosis>=2.0",
+    "firecrown>=0.1",
+    "gpry>=0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "flake8>=3.9",
+    "mypy>=0.900",
+]
+docs = [
+    "sphinx>=4.0",
+    "sphinx-rtd-theme>=1.0",
+]
+
+[project.scripts]
+clgpry-run = "clgpry.main:main"
+
+[project.urls]
+Homepage = "https://github.com/jeanjacquemier/clgpry"
+"Bug Tracker" = "https://github.com/jeanjacquemier/clgpry/issues"
+Documentation = "https://github.com/jeanjacquemier/clgpry"
+"Source Code" = "https://github.com/jeanjacquemier/clgpry"
+
+[tool.setuptools.package-data]
+clgpry = ["data/*.ini"]

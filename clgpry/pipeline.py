@@ -486,10 +486,6 @@ class ClusterLikelihoodPipeline:
         plt.tight_layout()
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
-        with open('loglike_values.npy', 'wb') as f:
-            np.save(f, values_array)
-    
-        
         
         print(f"\nHistogram saved to: {output_path}")
         if len(finite_values) > 0:

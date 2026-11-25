@@ -106,6 +106,11 @@ def main():
         default="likelihood_file.py",
         help="Path or source identifier for Firecrown likelihood configuration",
     )
+    parser.add_argument(
+        "--test-only",
+        action="store_true",
+        help="Run a test of the likelihood evaluation without executing the full pipeline", 
+    )
 
     args = parser.parse_args()
 
@@ -156,7 +161,11 @@ def main():
     status = "success"
     t_start = time.perf_counter()
     try:
-        runner.run()
+        if not args.test_only:
+            runner.run()
+        else:
+            for i in range(10):
+                pipe.test(delta = np.random.rand()/1000)
     except Exception as e:
         status = f"error: {e!r}"
         print(f'GPry Runner error: {e!r}')
@@ -165,12 +174,12 @@ def main():
         wall_time = time.perf_counter() - t_start
         if is_main:
             pipe.print_loglike_counter()
-            '''
+            
             try:
                 pipe.save_loglike_histogram()
             except:
                 print('Error cound not save_loglike_histogram')
-            '''
+            
             values_array = np.array(pipe.loglike_values)
             with open('loglike_values.npy', 'wb') as f:
                 np.save(f, values_array)
@@ -178,7 +187,7 @@ def main():
             write_benchmark_file(run_dir, args, size, status, wall_time, pipe)
     # Plot / save only from the main process to avoid N processes
     # writing the same files.
-    if is_main:
+    if is_main and not args.test_only:
         runner.plot_progress()
         runner.plot_mc()
 

@@ -157,14 +157,14 @@ def main():
     params_name = pipe.get_param_names(use_latex=True, plot_safe=True)
     print(f'INFO: {len(params_name)} parameters NOT fixed: {params_name}')
     print(f'INFO: Bounds: {pipe.bounds}')
-    runner = Runner(pipe.loglike, pipe.bounds, params=params_name)#, checkpoint=args.checkpoint, load_checkpoint="resume")
+    # runner = Runner(pipe.loglike, pipe.bounds, params=params_name)#, checkpoint=args.checkpoint, load_checkpoint="resume")
     status = "success"
     t_start = time.perf_counter()
     try:
         if not args.test_only:
             runner.run()
         else:
-            for i in range(10):
+            for i in range(2):
                 pipe.test(delta = np.random.rand()/1000)
     except Exception as e:
         status = f"error: {e!r}"
@@ -177,8 +177,8 @@ def main():
             
             try:
                 pipe.save_loglike_histogram()
-            except:
-                print('Error cound not save_loglike_histogram')
+            except Exception as e:
+                print(f'Error save_loglike_histogram: {e!r}')
             
             values_array = np.array(pipe.loglike_values)
             with open('loglike_values.npy', 'wb') as f:

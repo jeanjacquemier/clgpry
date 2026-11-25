@@ -504,7 +504,8 @@ class ClusterLikelihoodPipeline:
         Returns:
             The log-likelihood returned by :meth:`loglike`.
         """
-        params = np.array([0.22, 0.8, 3.33, 0.95, -0.023, 0.56, 0.0459, 0.0397]) + delta
+        params = np.array([0.22, 0.8]) + delta
+        #params = np.array([0.22, 0.8, 3.33, 0.95, -0.023, 0.56, 0.0459, 0.0397]) + delta
         return self.loglike(params)
 
 

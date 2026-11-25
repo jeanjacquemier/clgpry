@@ -168,7 +168,6 @@ class ClusterLikelihoodPipeline:
         self.verbose = verbose
 
         # Load parameters from priors file
-        print(f'DEBUG priors_path: {priors_path}')
         self.DEFAULT_COSMO, self.DEFAULT_FC, self.BOUNDS, self.PARAM_NAMES = _load_priors_from_ini(priors_path)
 
         self.bounds = [list(b) for b in self.BOUNDS]

@@ -7,6 +7,70 @@ from gpry import Runner
 
 from .plot import save_loglike_histogram
 
+"""
+  options={
+        "n_initial": 30,        # initial samples drawn before the active-learning loop starts
+        "max_initial": 300,     # cap on the initial-sampling stage if the points are not "finite" enough
+    },
+
+n_initial : Nn_initial : Number of finite initial truth evaluations before starting the BO loop (default: 3 * number of dimensions)
+max_initial : Maximum number of truth evaluations at initialization. If it is reached before n_initial finite points have been found, the run will fail. To avoid that, try decreasing the volume of your prior (default: 30 * (number of dimensions)**1.5).
+max_total : Maximum number of attempted sampling points before the run stops. This is useful if you e.g. want to restrict the maximum computation resources (default: 70 * (number of dimensions)**1.5 or max_initial, whichever is largest).
+max_finite : Maximum number of sampling points accepted into the GP training set before the run stops. This might be useful if you use the DontConverge convergence criterion, specifying exactly how many points you want to have in your GP. If you set this limit by hand and find that it is easily saturated, try decreasing the volume of your prior (default: max_total).
+n_points_per_acq : Number of points which are aquired with Kriging believer for every acquisition step. It will be adjusted within a 20% tolerance to match a multiple of the number of parallel processes (default: number of dimensions).
+fit_full_every : Number of iterations between full GP hyperparameters fits, including several restarts of the optimiser. Pass ‘np.inf’ or a large number to never refit with restarts (default : 2 * sqrt(number of dimensions)).
+fit_simple_every : Similar to fit_full_every, but with a single optimiser run from the last optimum hyperparameters. Overridden by fit_full_every where it matches its periodicity. Pass np.inf or a large number to never refit from last optimum (default : 1, i.e. every iteration).e points have been found, the run will fail. To avoid that, try decreasing the volume of your prior (default: 30 * (number of dimensions)**1.5).
+max_total : Maximum number of attempted sampling points before the run stops. This is useful if you e.g. want to restrict the maximum computation resources (default: 70 * (number of dimensions)**1.5 or max_initial, whichever is largest).
+max_finite : Maximum number of sampling points accepted into the GP training set before the run stops. This might be useful if you use the DontConverge convergence criterion, specifying exactly how many points you want to have in your GP. If you set this limit by hand and find that it is easily saturated, try decreasing the volume of your prior (default: max_total).
+n_points_per_acq : Number of points which are aquired with Kriging believer for every acquisition step. It will be adjusted within a 20% tolerance to match a multiple of the number of parallel processes (default: number of dimensions).
+fit_full_every : Number of iterations between full GP hyperparameters fits, including several restarts of the optimiser. Pass ‘np.inf’ or a large number to never refit with restarts (default : 2 * sqrt(number of dimensions)).
+fit_simple_every : Similar to fit_full_every, but with a single optimiser run from the last optimum hyperparameters. Overridden by fit_full_every where it matches its periodicity. Pass np.inf or a large number to never refit from last optimum (default : 1, i.e. every iteration).umber of finite initial truth evaluations before starting the BO loop (default: 3 * number of dimensions)
+
+runner = Runner(
+    logLkl,
+    bounds,
+    options={
+        # If there is multimodality, we are more likely to be
+        # exploring simultaneously a couple of interesting areas
+        # so we can evaluate more points per iteration
+        "n_points_per_acq": "2d",
+        # We will probably need more training samples than default
+        # to represent a complicated posterior surface
+        "max_total": 400},
+    surrogate={
+        "regressor": {
+            # We want to adapt hyperparameters more often, to make
+            # it more likely to converge earlier
+            "n_restarts_optimizer": 20}},
+    gp_acquisition={
+        "NORA": {
+            # We want to make the acquisition function more
+            # exploratory (higher zeta_scaling)
+            "acq_func": {"LogExp": {"zeta_scaling": 1.1}},
+            # We want to re-run the nested sampler exploration as
+            # often as possible, because we expect frequent changes
+            "mc_every": 1}},
+    convergence_criterion={
+        # We want to make the CorrectCounter criterion necessary,
+        # not just sufficient, so that it detects when a new region
+        # is being explored. But we can also relax it a bit.
+        "CorrectCounter": {"policy": "n", "reltol": 0.05, "abstol": "0.05s"},
+        "GaussianKL": {"policy": "n"},
+        "TrainAlignment": {"policy": "n"},},
+    mc={
+        # In the final MC run, we want more live points for a
+        # better exploration of all the modes
+        "nested": {"nlive": "100d"}},
+    # Just for diagnostics. It will severely slow down the run if uncommented
+    # plots={
+    #     # Let's do a corner plot per iteration
+    #     "corner": True, "timing": False, "convergence": False,
+    #     "trace": False, "slices": False, "ext": "png"},
+    checkpoint=checkpoint,
+    load_checkpoint="overwrite")
+"""
+
+
 
 def exec_runner(
     std_path: str,
@@ -39,10 +103,15 @@ def exec_runner(
     )
 
     params_name = pipe.get_param_names(use_latex=False, plot_safe=True)
-    print(f"INFO: {len(params_name)} parameters NOT fixed: {params_name}")
+    print(f"INFO: {len(params_name)} parameters NOT fixed: {params_name}")  
+    options = {
+        "n_initial": 400,
+
+    }
     print(f"INFO: Bounds: {pipe.bounds}")
     runner = Runner(
-        pipe.loglike, pipe.bounds, params=params_name
+        pipe.loglike, pipe.bounds, params=params_name,
+        options=options, 
     )  # , checkpoint=args.checkpoint, load_checkpoint="resume")
     status = "success"
     t_start = time.perf_counter()

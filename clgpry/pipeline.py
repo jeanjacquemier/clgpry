@@ -26,7 +26,7 @@ def _load_priors_from_ini(ini_path, verbose=False):
         Tuple of (default_cosmo_dict, default_fc_dict, bounds_list, param_names_list)
     """
     config = configparser.ConfigParser()
-    config.read('/home/jacquemier/Working_dir/LSST/clgpry/data/priors_file.ini')
+    config.read(ini_path)
 
     default_cosmo = {}
     default_fc = {}

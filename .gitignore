@@ -1,4 +1,5 @@
 clgpry.egg-info/
 data/
 images/
+__pycache__
 

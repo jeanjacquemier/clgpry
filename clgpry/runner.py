@@ -10,7 +10,7 @@ from .plot import save_loglike_histogram
 """
   options={
         "n_initial": 30,        # initial samples drawn before the active-learning loop starts
-        "max_initial": 300,     # cap on the initial-sampling stage if the points are not "finite" enough
+        "max_initial": 1000,     # cap on the initial-sampling stage if the points are not "finite" enough
     },
 
 n_initial : Nn_initial : Number of finite initial truth evaluations before starting the BO loop (default: 3 * number of dimensions)
@@ -104,9 +104,11 @@ def exec_runner(
 
     params_name = pipe.get_param_names(use_latex=False, plot_safe=True)
     print(f"INFO: {len(params_name)} parameters NOT fixed: {params_name}")  
-    options = {
-        "n_initial": 400,
 
+   #'max_initial=240' needs to be larger than or equal to the number of initial finite evaluations 'n_initial=400'.
+    options = {
+        "n_initial": 90,
+        "max_initial" : 2000,
     }
     print(f"INFO: Bounds: {pipe.bounds}")
     runner = Runner(

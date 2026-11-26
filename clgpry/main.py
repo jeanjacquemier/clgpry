@@ -27,6 +27,12 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "--data_sacc_path",
+        type=str,
+        help="Full path name for sacc input data",
+        required=True,
+    )
+    parser.add_argument(
         "--checkpoint",
         type=str,
         default="output/intro",
@@ -67,6 +73,8 @@ def main():
     likelihood_source_abs = os.path.abspath(args.likelihood_source)
     os.makedirs(run_dir, exist_ok=True)
     if is_main:
+        data_sacc_path_abs = os.path.abspath(args.data_sacc_path)
+        os.environ["CLG_DATA"] = data_sacc_path_abs
         shutil.copy2(priors_abs, run_dir)
         shutil.copy2(likelihood_source_abs, run_dir)
     os.chdir(run_dir)

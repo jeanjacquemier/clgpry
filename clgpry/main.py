@@ -105,6 +105,8 @@ def main():
             except Exception as e:
                 print(f"runner.plot_mc error: {e!r}")
 
+            pipe.com_abort()
+
 
 if __name__ == "__main__":
     main()

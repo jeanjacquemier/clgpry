@@ -71,10 +71,10 @@ def main():
     run_dir = os.path.abspath(run_dir)
     priors_abs = os.path.abspath(args.priors_path)
     likelihood_source_abs = os.path.abspath(args.likelihood_source)
+    data_sacc_path_abs = os.path.abspath(args.data_sacc_path)
+    os.environ["CLG_DATA"] = data_sacc_path_abs
     os.makedirs(run_dir, exist_ok=True)
     if is_main:
-        data_sacc_path_abs = os.path.abspath(args.data_sacc_path)
-        os.environ["CLG_DATA"] = data_sacc_path_abs
         shutil.copy2(priors_abs, run_dir)
         shutil.copy2(likelihood_source_abs, run_dir)
     os.chdir(run_dir)
@@ -91,8 +91,15 @@ def main():
         # Plot / save only from the main process to avoid N processes
         # writing the same files.
         if not args.test_only:
-            runner.plot_progress()
-            runner.plot_mc()
+            try:
+                runner.plot_progress()
+            except Exception as e:
+                print(f"runner.plot_progress error: {e!r}")
+
+            try: 
+                runner.plot_mc()
+            except Exception as e:
+                print(f"runner.plot_mc error: {e!r}")
 
 
 if __name__ == "__main__":

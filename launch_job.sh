@@ -22,9 +22,12 @@ export OPENBLAS_NUM_THREADS=1
 
 echo "---> Allocation : ${SLURM_NTASKS} tâches, nœuds : ${SLURM_JOB_NODELIST}"
 
-srun -n "${SLURM_NTASKS}" bash -c 'echo "$(hostname) : $(lscpu | grep "Model name" | cut -d: -f2 | xargs)"' | sort | uniq -c
-echo "---> mpirun -n ${SLURM_NTASKS} clgpry-run --priors-path ./data/priors_file.ini --std-path  /sps/lsst/users/jacquem/miniforge3/envs/firecrown_clp/cosmosis-standard-library/ --likelihood-source ./data/likelihood_file.py"
+#srun -n "${SLURM_NTASKS}" bash -c 'echo "$(hostname) : $(lscpu | grep "Model name" | cut -d: -f2 | xargs)"' | sort | uniq -c
 mpirun --bind-to none -n "${SLURM_NTASKS}" \
-    clgpry-run --priors-path ./data/priors_file.ini --std-path  /sps/lsst/users/jacquem/miniforge3/envs/firecrown_clp/cosmosis-standard-library/ --likelihood-source ./data/likelihood_file.py 
+    clgpry-run --priors-path ./data/priors_file.ini  \
+   --std-path  /sps/lsst/users/jacquem/miniforge3/envs/firecrown_clp/cosmosis-standard-library \
+   --likelihood-source ./data/likelihood_file.py \
+   --data_sacc_path ./data/clusters_sacc_file_cov.sacc 
+
 
 

@@ -1,7 +1,7 @@
 from clgpry.pipeline import ClusterLikelihoodPipeline
-import argparse
 import numpy as np
 import time
+import configparser
 
 from gpry import Runner
 
@@ -71,10 +71,47 @@ runner = Runner(
 """
 
 
+def _load_sampler_option_form_ini(sampler_ini_path: str) -> dict:
+    """Load sampler options from INI file, specifically n_initial and max_initial.
+    
+    Reads the [grpy] section from the sampler INI configuration file and
+    extracts the n_initial and max_initial parameters.
+    
+    Args:
+        sampler_ini_path: Path to the sampler configuration INI file.
+        
+    Returns:
+        dict: Dictionary containing 'n_initial' and 'max_initial' as integers.
+              If either key is missing from the INI file, it will not be
+              included in the returned dictionary.
+              
+    Raises:
+        FileNotFoundError: If the sampler INI file does not exist.
+        configparser.Error: If there's an error reading the INI file.
+    """
+    config = configparser.ConfigParser()
+    config.read(sampler_ini_path)
+    
+    options = {}
+    
+    if config.has_section("grpy"):
+        if config.has_option("grpy", "n_initial"):
+            # Strip trailing commas and whitespace that might be in the INI file
+            n_initial_str = config.get("grpy", "n_initial").strip().rstrip(",")
+            options["n_initial"] = int(n_initial_str)
+            
+        if config.has_option("grpy", "max_initial"):
+            # Strip trailing commas and whitespace that might be in the INI file
+            max_initial_str = config.get("grpy", "max_initial").strip().rstrip(",")
+            options["max_initial"] = int(max_initial_str)
+    
+    return options
+
 
 def exec_runner(
     std_path: str,
     priors_path: str,
+    sampler_ini: str,
     is_main: bool,
     test_only: bool,
 ):
@@ -82,6 +119,7 @@ def exec_runner(
     Args:
         std_path: Path to the CosmoSIS standard library.
         priors_path: Path to the prior file.
+        
         is_main: Boolean indicating if this is the main MPI rank.
         test_only: Boolean indicating if only a test run should be performed.
     Returns:
@@ -105,11 +143,9 @@ def exec_runner(
     params_name = pipe.get_param_names(use_latex=False, plot_safe=True)
     print(f"INFO: {len(params_name)} parameters NOT fixed: {params_name}")  
 
-   #'max_initial=240' needs to be larger than or equal to the number of initial finite evaluations 'n_initial=400'.
-    options = {
-        "n_initial": 90,
-        "max_initial" : 2000,
-    }
+    # Load sampler options from the INI file
+    options = _load_sampler_option_form_ini(sampler_ini)
+    print(f"INFO: Loaded sampler options: {options}")
     print(f"INFO: Bounds: {pipe.bounds}")
     runner = Runner(
         pipe.loglike, pipe.bounds, params=params_name,

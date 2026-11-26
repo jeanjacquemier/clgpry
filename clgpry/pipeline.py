@@ -396,7 +396,8 @@ class ClusterLikelihoodPipeline:
     def com_abort(self):
         """Abort the current MPI process.
         """
-        self.comm.Abort(1)
+        from mpi4py import MPI
+        MPI.COMM_WORLD.Abort(1)
 
     def print_loglike_counter(self):
         """Display the counter of loglike evaluations and errors.

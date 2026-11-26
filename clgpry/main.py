@@ -33,6 +33,12 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "--sampler-ini",
+        type=str,
+        help="Path or source identifier for sampler.ini configuration",
+        required=True,   
+    )
+    parser.add_argument(
         "--checkpoint",
         type=str,
         default="output/intro",
@@ -49,6 +55,7 @@ def main():
         action="store_true",
         help="Run a test of the likelihood evaluation without executing the full pipeline",
     )
+
 
     args = parser.parse_args()
 
@@ -69,14 +76,17 @@ def main():
     if size > 1:
         run_dir = MPI.COMM_WORLD.bcast(run_dir, root=0)
     run_dir = os.path.abspath(run_dir)
+    sampler_source_abs = os.path.abspath(args.sampler_ini)
     priors_abs = os.path.abspath(args.priors_path)
     likelihood_source_abs = os.path.abspath(args.likelihood_source)
     data_sacc_path_abs = os.path.abspath(args.data_sacc_path)
     os.environ["CLG_DATA"] = data_sacc_path_abs
     os.makedirs(run_dir, exist_ok=True)
     if is_main:
+        shutil.copy2(sampler_source_abs, run_dir)
         shutil.copy2(priors_abs, run_dir)
         shutil.copy2(likelihood_source_abs, run_dir)
+        
     os.chdir(run_dir)
 
     if is_main:
@@ -84,7 +94,8 @@ def main():
         print(f"INFO: Output directory: {run_dir}")
 
     runner, pipe, status, wall_time = exec_runner(
-        args.std_path, priors_abs, is_main, args.test_only
+        args.std_path, priors_abs,
+        args.sampler_ini, is_main, args.test_only
     )
     if is_main:
         write_benchmark_file(run_dir, args, size, status, wall_time, pipe)

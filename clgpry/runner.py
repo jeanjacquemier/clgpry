@@ -60,14 +60,7 @@ def exec_runner(
         wall_time = time.perf_counter() - t_start
         if is_main:
             values_array = np.array(pipe.loglike_values)
-            pipe.print_loglike_counter()
-
-            try:
-                save_loglike_histogram(values_array)
-            except Exception as e:
-                print(f"Error save_loglike_histogram: {e!r}")
-
-            
+            pipe.print_loglike_counter()            
             with open("loglike_values.npy", "wb") as f:
                 np.save(f, values_array)
 

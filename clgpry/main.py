@@ -97,6 +97,10 @@ def main():
                 print(f"runner.plot_progress error: {e!r}")
 
             try: 
+                runner.generate_mc_sample()
+            except Exception as e:
+                print(f"runner.generate_mc_sample error: {e!r}")
+            try:
                 runner.plot_mc()
             except Exception as e:
                 print(f"runner.plot_mc error: {e!r}")

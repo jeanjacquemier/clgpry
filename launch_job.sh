@@ -27,7 +27,8 @@ mpirun --bind-to none -n "${SLURM_NTASKS}" \
     clgpry-run --priors-path ./data/priors_file.ini  \
    --std-path  /sps/lsst/users/jacquem/miniforge3/envs/firecrown_clp/cosmosis-standard-library \
    --likelihood-source ./data/likelihood_file.py \
-   --data_sacc_path ./data/clusters_sacc_file_cov.sacc 
+   --data_sacc_path ./data/clusters_sacc_file_cov.sacc \
+   --sampler-ini data/sampler_file.ini
 
 
 

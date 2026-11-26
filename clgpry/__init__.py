@@ -13,7 +13,14 @@ __version__ = "0.1.0"
 __author__ = "LSST Dark Energy Science Collaboration"
 __license__ = "MIT"
 
-from .pipeline import ClusterLikelihoodPipeline
+
+def __getattr__(name):
+    """Lazy import of ClusterLikelihoodPipeline to avoid requiring all dependencies."""
+    if name == "ClusterLikelihoodPipeline":
+        from .pipeline import ClusterLikelihoodPipeline
+        return ClusterLikelihoodPipeline
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
 
 __all__ = [
     "ClusterLikelihoodPipeline",

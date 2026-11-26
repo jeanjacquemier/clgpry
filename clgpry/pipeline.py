@@ -10,8 +10,7 @@ import importlib.util
 import configparser
 
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+
 
 from cosmosis.datablock import DataBlock, option_section
 from firecrown.connector.cosmosis.likelihood import FirecrownLikelihood
@@ -27,14 +26,15 @@ def _load_priors_from_ini(ini_path, verbose=False):
         Tuple of (default_cosmo_dict, default_fc_dict, bounds_list, param_names_list)
     """
     config = configparser.ConfigParser()
-    config.read(ini_path)
+    config.read('/home/jacquemier/Working_dir/LSST/clgpry/data/priors_file.ini')
 
     default_cosmo = {}
     default_fc = {}
     param_names = []
     bounds = []
+
     
-    # Parse cosmological_parameters section
+    # Parse cosmological_paramete   rs section
     if "cosmological_parameters" in config:
         for key, value in config["cosmological_parameters"].items():
             parts = value.split()
@@ -59,6 +59,7 @@ def _load_priors_from_ini(ini_path, verbose=False):
                 default_fc[key] = float(parts[1])
                 param_names.append(("firecrown_number_counts", key))
                 bounds.append([float(parts[0]), float(parts[2])])
+    
     assert len(bounds) > 1, "At least too parameters need to be NOT fixed."
 
     if verbose == True:
@@ -86,8 +87,6 @@ class ClusterLikelihoodPipeline:
     each evaluation because DataBlocks are write-once and cannot be reused.
 
     Args:
-        likelihood_source: Path or source identifier used to configure the
-            Firecrown likelihood.
         std_path: Path to the CosmoSIS standard library.
         camb_options: Optional CAMB configuration values overriding defaults.
         likelihood_options: Optional likelihood configuration values
@@ -148,7 +147,7 @@ class ClusterLikelihoodPipeline:
     }
    
 
-    def __init__(self, likelihood_source,
+    def __init__(self,
                  std_path,
                  priors_path,
                  camb_options=None, likelihood_options=None,
@@ -156,8 +155,6 @@ class ClusterLikelihoodPipeline:
         """Initialize the pipeline modules and likelihood configuration.
 
         Args:
-            likelihood_source: Path or source identifier for the Firecrown
-                likelihood.
             std_path: Path to the CosmoSIS standard library.
             camb_options: Optional CAMB configuration overrides.
             likelihood_options: Optional Firecrown likelihood configuration
@@ -179,7 +176,7 @@ class ClusterLikelihoodPipeline:
 
         self._setup_consistency()
         self._setup_camb(camb_options)
-        self._setup_likelihood(likelihood_source, likelihood_options)
+        self._setup_likelihood(likelihood_options)
 
     
     def get_param_names(self, use_latex=False, plot_safe=False):
@@ -275,16 +272,15 @@ class ClusterLikelihoodPipeline:
             opts[option_section, k] = v
         self.camb_cfg = self.camb_mod.setup(opts)
 
-    def _setup_likelihood(self, likelihood_source, likelihood_options=None):
+    def _setup_likelihood(self, likelihood_options=None):
         """Configure the Firecrown likelihood.
 
         Args:
-            likelihood_source: Path or source identifier for the likelihood.
             likelihood_options: Optional likelihood configuration values
                 overriding the defaults.
         """
         defaults = dict(
-            likelihood_source=likelihood_source,
+            likelihood_source="likelihood_file.py",
             sampling_parameters_sections=self.FNC,
             # read by build_likelihood via build_parameters.get_bool
             use_cluster_counts=True,
@@ -422,78 +418,7 @@ class ClusterLikelihoodPipeline:
         print("="*60 + "\n")
         return (self.loglike_call_count, self.loglike_error_count, total_calls)
 
-    def save_loglike_histogram(self, output_path="loglike_histogram.png", bins=50):
-        """Generate and save a histogram of loglike values.
-        
-        Creates a histogram showing the distribution of loglike return values
-        collected during pipeline execution. Separates successful values from
-        -inf (error) values.
-        
-        Args:
-            output_path: Path where the histogram figure will be saved.
-                Default: "loglike_histogram.png"
-            bins: Number of bins for the histogram (for finite values).
-                Default: 50
-        
-        Returns:
-            str: Path to the saved figure.
-        
-        Raises:
-            ValueError: If no loglike values have been collected yet.
-        """
-        if not self.loglike_values:
-            raise ValueError("No loglike values collected. Run loglike() first.")
-        
-        # Separate finite values from -inf values
-        values_array = np.array(self.loglike_values)
-        finite_values = values_array[np.isfinite(values_array)]
-        error_count = np.sum(~np.isfinite(values_array))
-        
-        # Create figure with histogram
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        if len(finite_values) > 0:
-            ax.hist(finite_values, bins=bins, alpha=0.7, color='steelblue', 
-                   edgecolor='black', label='Finite values')
-        
-        # Add text annotation for errors
-        if error_count > 0:
-            ax.text(0.02, 0.98, f'Failed evaluations (-inf): {error_count}',
-                   transform=ax.transAxes, fontsize=11, verticalalignment='top',
-                   bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-        
-        # Labels and title
-        ax.set_xlabel('Log-Likelihood Value', fontsize=12)
-        ax.set_ylabel('Frequency', fontsize=12)
-        ax.set_title('Distribution of Log-Likelihood Values', fontsize=14, fontweight='bold')
-        ax.grid(True, alpha=0.3)
-        
-        # Add statistics text
-        if len(finite_values) > 0:
-            stats_text = (f'Statistics (finite values only):\n'
-                         f'  Mean: {finite_values.mean():.4f}\n'
-                         f'  Std:  {finite_values.std():.4f}\n'
-                         f'  Min:  {finite_values.min():.4f}\n'
-                         f'  Max:  {finite_values.max():.4f}\n'
-                         f'  Count: {len(finite_values)}')
-            ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, 
-                   fontsize=10, verticalalignment='top', horizontalalignment='right',
-                   bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5),
-                   family='monospace')
-        
-        plt.rcParams["text.usetex"] = False
-        plt.tight_layout()
-        plt.savefig(output_path, dpi=150, bbox_inches='tight')
-        plt.close()
-        
-        print(f"\nHistogram saved to: {output_path}")
-        if len(finite_values) > 0:
-            print(f"  Finite values: {len(finite_values)}")
-        if error_count > 0:
-            print(f"  Error values (-inf): {error_count}")
-        
-        return output_path
-
+    
     def test(self, delta=0.0):
         """Evaluate the likelihood near the reference parameter values.
 

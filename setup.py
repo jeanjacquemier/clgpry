@@ -59,6 +59,7 @@ setup(
     entry_points={
         "console_scripts": [
             "clgpry-run=clgpry.main:main",
+            "clgpry-plot=clgpry.plot:main",
         ],
     },
     zip_safe=False,

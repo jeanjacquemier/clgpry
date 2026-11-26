@@ -48,6 +48,7 @@ docs = [
 
 [project.scripts]
 clgpry-run = "clgpry.main:main"
+clgpry-plot = "clgpry.plot:main"
 
 [project.urls]
 Homepage = "https://github.com/jeanjacquemier/clgpry"

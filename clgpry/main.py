@@ -95,7 +95,7 @@ def main():
 
     runner, pipe, status, wall_time = exec_runner(
         args.std_path, priors_abs,
-        args.sampler_ini, is_main, args.test_only
+        sampler_source_abs, is_main, args.test_only
     )
     if is_main:
         write_benchmark_file(run_dir, args, size, status, wall_time, pipe)

@@ -89,9 +89,14 @@ def _load_sampler_option_form_ini(sampler_ini_path: str) -> dict:
         FileNotFoundError: If the sampler INI file does not exist.
         configparser.Error: If there's an error reading the INI file.
     """
+    from pathlib import Path
+
+    current_dir = Path.cwd()
+
     config = configparser.ConfigParser()
     config.read(sampler_ini_path)
     
+
     options = {}
     
     if config.has_section("grpy"):
@@ -105,6 +110,11 @@ def _load_sampler_option_form_ini(sampler_ini_path: str) -> dict:
             max_initial_str = config.get("grpy", "max_initial").strip().rstrip(",")
             options["max_initial"] = int(max_initial_str)
     
+        if config.has_option("grpy", "max_total"):
+            # Strip trailing commas and whitespace that might be in the INI file
+            max_total_str = config.get("grpy", "max_total").strip().rstrip(",")
+            options["max_total"] = int(max_total_str)
+
     return options
 
 

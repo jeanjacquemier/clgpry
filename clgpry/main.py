@@ -1,6 +1,8 @@
 import argparse
 import os
 import shutil
+import sys
+import traceback
 from datetime import datetime
 
 from .pipeline import ClusterLikelihoodPipeline
@@ -9,7 +11,7 @@ from .runner import exec_runner
 from .benchmark import write_benchmark_file
 
 
-def main():
+def _run():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
         description="Run the GPry Runner pipeline with configurable parameters."
@@ -116,7 +118,35 @@ def main():
             except Exception as e:
                 print(f"runner.plot_mc error: {e!r}")
 
-            pipe.com_abort()
+    # All ranks leave together; mpi4py finalizes MPI at interpreter exit.
+    if size > 1:
+        MPI.COMM_WORLD.Barrier()
+
+
+def main():
+    """Run the pipeline; on any failure on any rank, abort the whole MPI job."""
+    try:
+        _run()
+    except SystemExit as e:
+        # argparse errors / explicit exits: only abort if non-zero
+        if e.code not in (0, None):
+            _abort_all()
+        raise
+    except BaseException:
+        traceback.print_exc()
+        sys.stderr.flush()
+        sys.stdout.flush()
+        _abort_all()
+        raise
+
+
+def _abort_all():
+    try:
+        from mpi4py import MPI
+    except ImportError:
+        return
+    if MPI.COMM_WORLD.Get_size() > 1:
+        MPI.COMM_WORLD.Abort(1)
 
 
 if __name__ == "__main__":

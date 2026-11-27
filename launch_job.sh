@@ -1,7 +1,7 @@
 #!/usr/bin/bash
-#SBATCH --job-name=cosmosis_gpry
+#SBATCH --job-name=1_gpry
 #SBATCH --time=24:00:00
-#SBATCH --ntasks=30
+#SBATCH --ntasks=3
 #SBATCH --partition=hpc,lsst
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=1000      # ~80 Go au total ; ajustez selon vos besoins
@@ -23,12 +23,10 @@ export OPENBLAS_NUM_THREADS=1
 echo "---> Allocation : ${SLURM_NTASKS} tâches, nœuds : ${SLURM_JOB_NODELIST}"
 
 #srun -n "${SLURM_NTASKS}" bash -c 'echo "$(hostname) : $(lscpu | grep "Model name" | cut -d: -f2 | xargs)"' | sort | uniq -c
-mpirun --bind-to none -n "${SLURM_NTASKS}" \
-    clgpry-run --priors-path ./data/priors_file.ini  \
-   --std-path  /sps/lsst/users/jacquem/miniforge3/envs/firecrown_clp/cosmosis-standard-library \
-   --likelihood-source ./data/likelihood_file.py \
-   --data_sacc_path ./data/clusters_sacc_file_cov.sacc \
-   --sampler-ini data/sampler_file.ini
-
-
+mpirun --bind-to none -n ${SLURM_NTASKS}   python -m mpi4py \
+    "$(which clgpry-run)"  --priors-path ./data/priors_file.ini \
+     --std-path  /sps/lsst/users/jacquem/miniforge3/envs/firecrown_clp/cosmosis-standard-library \
+    --likelihood-source ./data/likelihood_file.py \
+    --data_sacc_path ./data/clusters_sacc_file_cov.sacc \
+    --sampler-ini data/sampler_file.ini
 

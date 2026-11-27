@@ -119,7 +119,9 @@ def _run():
                 print(f"runner.plot_mc error: {e!r}")
 
     # All ranks leave together; mpi4py finalizes MPI at interpreter exit.
+    print(f'DEBUG mpi size={size}' )
     if size > 1:
+        print('MPI.COMM_WORLD.Barrier()')
         MPI.COMM_WORLD.Barrier()
 
 

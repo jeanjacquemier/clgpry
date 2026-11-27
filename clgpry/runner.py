@@ -172,7 +172,6 @@ def exec_runner(
     except Exception as e:
         status = f"error: {e!r}"
         print(f"GPry Runner error: {e!r}")
-        pipe.com_abort()
     finally:
         wall_time = time.perf_counter() - t_start
         if is_main:
